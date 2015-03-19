@@ -1,4 +1,11 @@
-# Implementing a Splash Screen on Android
+# Splash Screens on Android
+
+Table of Contents
+1. [Introduction](#introduction)
+2. [The Basics](#the-basics)
+3. [Gotchas](#gotchas)
+4. [Performing Background Work](#performing-background-work)
+5. [Conclusion](#conclusion)
 
 ### Introduction
 

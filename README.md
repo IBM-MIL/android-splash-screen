@@ -1,6 +1,7 @@
 # Splash Screens on Android
 
-Table of Contents
+### Table of Contents
+
 1. [Introduction](#introduction)
 2. [The Basics](#the-basics)
 3. [Gotchas](#gotchas)
@@ -9,13 +10,13 @@ Table of Contents
 
 ### Introduction
 
-You may find yourself wanting to implement a splash screen for your Android app. Reasons for doing so include the visual appeal, to match an existing iOS version of your app, or to perform any necessary background work at start up. It should be noted that splash screens are certainly not required in your app. In fact, [some feel that they should be avoided entirely](http://cyrilmottier.com/2012/05/03/splash-screens-are-evil-dont-use-them/). Still, it is not uncommon to come across Android apps that utilize the notion of a splash screen.
+You may find yourself needing to implement a splash screen for your Android app. Reasons for doing so might include having to match an existing iOS design of your app, to perform any necessary background work at start up, or simply for the visual appeal that it provides. It should be noted that splash screens are certainly not required in your app. In fact, [some feel that they should be avoided entirely](http://cyrilmottier.com/2012/05/03/splash-screens-are-evil-dont-use-them/). Still, it is not uncommon to come across Android apps that utilize a splash screen.
 
 This blog post provides a detailed outline for implementing a splash screen on Android. While the implementation is relatively straight forward, there are a few caveats that developers often overlook. We've also provided a working sample project that can be run on your device or emulator.
 
 ### The Basics
 
-Create an `Activity` named `SplashActivity` that extends `Activity` as opposed to `ActionBarActivity`.
+First, create an `Activity` named `SplashActivity`.
 
 **SplashActivity.java**
 ``` java
@@ -24,7 +25,7 @@ public class SplashActivity extends Activity {
 }
 ```
 
-This will exclude the `ActionBar` from showing in `SplashActivity`. Next, declare `SplashActivity` as the **launcher activity** in the app's manifest file.
+It's important that we extend from `Activity` and not `ActionBarActivity`. This will exclude the `ActionBar` from being visible on our splash screen. Next, declare `SplashActivity` as the **launcher activity** in the app's manifest file.
 
 **AndroidManifest.xml**
 ``` xml
@@ -40,9 +41,9 @@ This will exclude the `ActionBar` from showing in `SplashActivity`. Next, declar
 ...
 ```
 
-`SplashActivity` will now be the initial screen shown when the app launches.
+Our splash screen will now be the initial screen shown when the app launches.
 
-The layout for a splash screen is typically very simple. For our purposes, we will simply show an `ImageView` in the center of the screen. The XML layout for `SplashActivity` follows:
+The layout for a splash screen is typically very simple. For our purposes, we will simply show an `ImageView` in the center of the screen.
 
 **activity_splash.xml**
 ``` xml
@@ -63,7 +64,7 @@ The layout for a splash screen is typically very simple. For our purposes, we wi
 </RelativeLayout>
 ```
 
-Inside `onCreate(Bundle)` of `SplashActivity` we will initialize a `Handler` and its corresponding `Runnable` that will start the app's main activity after a specified duration.
+Inside `onCreate(Bundle)` we will initialize a `Handler` and its corresponding `Runnable` that will be responsible for starting the app's main activity after a specified duration.
 
 **SplashActivity.java**
 ``` java
@@ -86,11 +87,11 @@ protected void onCreate(Bundle savedInstanceState) {
 }
 ```
 
-`Handler` is part of the `android.os` package and it allows developers to easily utilize a message queue for a thread without having to deal with synchronization and lower-level threading APIs in Java. In our case, we will use the `Handler` to invoke our `Runnable` object at a later point in time on the main UI thread without blocking other operations from occurring on the same thread in the meantime.
+`Handler` is part of the `android.os` package and it easily allows developers to utilize a message queue for a thread without having to deal with synchronization and the lower-level threading APIs in Java. In our case, we will use the `Handler` to invoke our `Runnable` object at a later point in time on the main UI thread without blocking other operations from occurring in the meantime.
 
-The implementation of `run()` is straightforward: the app's main activity (simply called `MainActivity` in the example) is started via an `Intent`. The call to `finish()` on `SplashActivity` marks it as done and effectively removes it from the app's back stack. This prevents the user from seeing the splash screen again if they back out of the app via the system's back button.
+The implementation of `run()` is straightforward: the app's main activity (simply called `MainActivity` in the example) is started via an `Intent`. The call to `finish()` marks `SplashActivity` as done and effectively removes it from the app's back stack. This prevents the user from seeing the splash screen again if they back out of the app via the system's back button.
 
-From `onResume()` in `SplashActivity`, the method `postDelayed(Runnable, long)` is invoked on `mHandler` and is passed both our `Runnable` instance and a delay measured in milliseconds. This will enqueue `mRunnable` onto the thread's message queue and then dequeue it for execution after the specified delay.
+From `onResume()`, the method `postDelayed(Runnable, long)` is invoked on `mHandler` and is passed both our `Runnable` instance and a timed delay which is measured in milliseconds. This will enqueue `mRunnable` onto the thread's message queue and then dequeue it for execution after our specified delay.
 
 **SplashActivity.java**
 ``` java
@@ -114,7 +115,7 @@ public void onPause() {
 }
 ```
 
-And that encompasses all of the necessary components for properly implementing a basic splash screen. The next section describes some of the pitfalls that developers sometimes fall into when implemetning a splash screen. For more advanced uses of a splash screen, skip to the section [Performing Background Work](#performing-background-work).
+And that encompasses all of the necessary components for properly implementing a basic splash screen. The next section describes some of the pitfalls that developers sometimes encounter when implemetning a splash screen. For more advanced uses of a splash screen, skip to the section [Performing Background Work](#performing-background-work).
 
 ### Gotchas
 

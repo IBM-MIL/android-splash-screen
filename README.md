@@ -10,7 +10,7 @@ This blog post provides a detailed outline for implementing a splash screen on A
 
 Create an `Activity` named `SplashActivity` that extends `Activity` as opposed to `ActionBarActivity`.
 
-###### SplashActivity.java
+**SplashActivity.java**
 ``` java
 public class SplashActivity extends Activity {
   ...
@@ -19,7 +19,7 @@ public class SplashActivity extends Activity {
 
 This will exclude the `ActionBar` from showing in `SplashActivity`. Next, declare `SplashActivity` as the **launcher activity** in the app's manifest file.
 
-###### AndroidManifest.xml
+**AndroidManifest.xml**
 ``` xml
 ...
 <activity
@@ -37,7 +37,7 @@ This will exclude the `ActionBar` from showing in `SplashActivity`. Next, declar
 
 The layout for a splash screen is typically very simple. For our purposes, we will simply show an `ImageView` in the center of the screen. The XML layout for `SplashActivity` follows:
 
-###### activity_splash.xml
+**activity_splash.xml**
 ``` xml
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -58,7 +58,7 @@ The layout for a splash screen is typically very simple. For our purposes, we wi
 
 Inside `onCreate(Bundle)` of `SplashActivity` we will initialize a `Handler` and its corresponding `Runnable` that will start the app's main activity after a specified duration.
 
-###### SplashActivity.java
+**SplashActivity.java**
 ``` java
 private Handler mHandler;
 private Runnable mRunnable;
@@ -85,7 +85,7 @@ The implementation of `run()` is straightforward: the app's main activity (simpl
 
 From `onResume()` in `SplashActivity`, the method `postDelayed(Runnable, long)` is invoked on `mHandler` and is passed both our `Runnable` instance and a delay measured in milliseconds. This will enqueue `mRunnable` onto the thread's message queue and then dequeue it for execution after the specified delay.
 
-###### SplashActivity.java
+**SplashActivity.java**
 ``` java
 private static final long SPLASH_DURATION = 2500L;
 ...
@@ -98,7 +98,7 @@ public void onResume() {
 
 We will also remove `mRunnable` from the `Handler` in `onPause()` to ensure it doesn't execute when `SplashActivity` is no longer in a resumed state.
 
-###### SplashActivity.java
+**SplashActivity.java**
 ``` java
 @Override
 public void onPause() {
@@ -107,7 +107,7 @@ public void onPause() {
 }
 ```
 
-And that encompasses all of the necessary components for properly implementing a basic splash screen. The next section describes some of the pitfalls that developers sometimes fall into when implemetning a splash screen. For more advanced uses of a splash screen, skip to the section [Performing Background Work]().
+And that encompasses all of the necessary components for properly implementing a basic splash screen. The next section describes some of the pitfalls that developers sometimes fall into when implemetning a splash screen. For more advanced uses of a splash screen, skip to the section [Performing Background Work](#performing-background-work).
 
 ### Gotchas
 

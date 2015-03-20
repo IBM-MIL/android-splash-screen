@@ -121,4 +121,85 @@ And that encompasses all of the necessary components for properly implementing a
 
 ### Performing Background Work
 
+A common pattern is to perform some necessary background work at start up when the splash screen is present. This can be helpful if there is data shown on the home screen that needs to be retrieved from a network or external memory device. A valid alternative is to display a progress bar or dialog to indicate to the user that a long standing operation is being performed. With a splash screen, while inhibiting the user's progress through the app, we get the benefit of hiding expensive operations from the user.
+
+As a trivial example, let's assume we wanted to download an image from the network (e.g. a user's profile image that is shown on the home screen). We can create an `AsyncTask` that will do exactly this:
+
+**ImageLoader.java**
+``` java
+public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
+    @Override
+    protected Bitmap doInBackground(String... urls) {
+        // make network call to fetch image
+        Bitmap bitmap = null;
+        try {
+            bitmap = BitmapFactory.decodeStream(new URL(urls[0]).openStream());
+        } catch (Exception e) {
+            e.printStackTrace();
+            cancel(true);
+        }
+        return bitmap;
+    }
+
+    @Override
+    protected void onPostExecute(Bitmap result) {
+        Log.i(SplashActivity.class.getName(), "Image successfully downloaded!");
+        if (result != null) {
+            // do something with the bitmap
+            ...
+        }
+    }
+
+    @Override
+    protected void onCancelled() {
+        Log.i(SplashActivity.class.getName(), "Image download not successful.");
+    }
+}
+```
+
+`doInBackground(String...)` runs on its own thread and performs the actual network call for fetching the image. Both `onPostExecute(Bitmap)` and `onCancelled()` will run on the thread that the `ImageLoader` was invoked from, which is the main UI thread in our case.
+
+For demonstration purposes we've written our own `AsyncTask` for grabbing the image. [Excellent libraries](http://square.github.io/picasso/) already exist that perform this operation and more. Note that making a network call requires the `INTERNET` permission to be added to the manifest file.
+
+How the `AsyncTask` interacts with our splash screen is up to us. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [previous section](#the-basics), and cancel the background task if it takes too long. It is not a good idea to have the duration of our splash screen dependent on the background work being completed. Many types of tasks, such as those involving network calls, can take an undetermined amount of time to complete and having a timeout mechanism is important. We can simply augment our `Runnable` object to cancel the `AsyncTask` if it hasn't been completed after the specified delay in order to achieve this.
+
+**SplashActivity.java**
+``` java
+...
+private ImageLoader mImageLoader;
+
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    ...
+    mImageLoader = new ImageLoader();
+    mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // cancel AsyncTask if it hasn't finished
+            if (mImageLoader.getStatus() != AsyncTask.Status.FINISHED) {
+                mImageLoader.cancel(true);
+            }
+
+            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            finish();
+        }
+    };
+
+    mImageLoader.execute(IMAGE_URL);
+}
+```
+
+Executing `ImageLoader` inside of `onCreate(Bundle)` allows the background work to start as soon as the `SplashActivity` is created. Consequently, we can cancel the task in `onDestroy()` to allow the operation to continue in the background even if the activity is no longer visible.
+
+**SplashActivity.java**
+``` java
+@Override
+public void onDestroy() {
+    super.onDestroy();
+    mImageLoader.cancel(true);
+}
+```
+
+The rest of `SplashActivity` remains intact from the [previous section](#the-basics).
+
 ### Conclusion

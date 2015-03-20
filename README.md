@@ -21,7 +21,7 @@ First, create an `Activity` named `SplashActivity`.
 **SplashActivity.java**
 ``` java
 public class SplashActivity extends Activity {
-  ...
+    ...
 }
 ```
 
@@ -29,7 +29,6 @@ It's important that we extend from `Activity` and not `ActionBarActivity`. This 
 
 **AndroidManifest.xml**
 ``` xml
-...
 <activity
   android:name=".SplashActivity"
   android:label="@string/app_name">
@@ -38,7 +37,6 @@ It's important that we extend from `Activity` and not `ActionBarActivity`. This 
       <category android:name="android.intent.category.LAUNCHER" />
     </intent-filter>
 </activity>
-...
 ```
 
 Our splash screen will now be the initial screen shown when the app launches.
@@ -98,7 +96,7 @@ From `onResume()`, the method `postDelayed(Runnable, long)` is invoked on `mHand
 private static final long SPLASH_DURATION = 2500L;
 ...
 @Override
-public void onResume() {
+protected void onResume() {
     super.onResume();
     mHandler.postDelayed(mRunnable, SPLASH_DURATION);
 }
@@ -109,7 +107,7 @@ We will also remove `mRunnable` from the `Handler` in `onPause()` to ensure it d
 **SplashActivity.java**
 ``` java
 @Override
-public void onPause() {
+protected void onPause() {
     super.onPause();
     mHandler.removeCallbacks(mRunnable);
 }
@@ -118,6 +116,54 @@ public void onPause() {
 And that encompasses all of the necessary components for properly implementing a basic splash screen. The next section describes some of the pitfalls that developers sometimes encounter when implemetning a splash screen. For more advanced uses of a splash screen, skip to the section [Performing Background Work](#performing-background-work).
 
 ### Gotchas
+
+There are often a few oversights made when developing a splash screen. For example, we made sure to remove our `Runnable` from the `Handler` in `onPause()` and then effectively restart the splash screen duration each time `onResume()` was called.
+
+**SplashActiviy.java**
+``` java
+@Override
+protected void onResume() {
+    super.onResume();
+    mHandler.postDelayed(mRunnable, SPLASH_DURATION);
+}
+
+@Override
+protected void onPause() {
+    super.onPause();
+    mHandler.removeCallbacks(mRunnable);
+}
+```
+
+If instead we moved the invocation of `postDelayed(Runnable, long)` to `onCreate()` and then didn't bother removing the `Runnable` callback in `onPause()`, the `Runnable` would end up being executed even if the app was in the background. As a result, `MainActivity` would suddenly appear on the user's screen even though the app was no longer in an active state.
+
+``` java
+// DON'T DO THIS!
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    ...
+    new Handler().postDelayed(new Runnable() {
+        @Override
+        public void run() {
+            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            finish();
+        }
+    }, SPLASH_DURATION);
+}
+```
+
+Likewise, we could have forgot to cancel our `AsyncTask` in `onDestroy()` or in our `Runnable` implementation. Forgetting to do so could easily cause a **null pointer exception** at runtime. Imagine if we had the following line of code in `onPostExecute(Bitmap)`:
+
+**ImageLoader.java**
+``` java
+@Override
+protected void onPostExecute(Bitmap result) {
+    Log.i(SplashActivity.class.getName(), "Image successfully downloaded.");
+
+    if (result != null) {
+        // do something with the bitmap
+    }
+}
+```
 
 ### Performing Background Work
 
@@ -165,9 +211,8 @@ How the `AsyncTask` interacts with our splash screen is up to us. A good approac
 
 **SplashActivity.java**
 ``` java
-...
 private ImageLoader mImageLoader;
-
+...
 @Override
 protected void onCreate(Bundle savedInstanceState) {
     ...
@@ -194,7 +239,7 @@ Executing `ImageLoader` inside of `onCreate(Bundle)` allows the background work 
 **SplashActivity.java**
 ``` java
 @Override
-public void onDestroy() {
+protected void onDestroy() {
     super.onDestroy();
     mImageLoader.cancel(true);
 }

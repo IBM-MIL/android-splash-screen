@@ -1,5 +1,6 @@
 package com.ibm.mil.splashscreendemo;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 public class WorkerSplashActivity extends SplashActivity {
@@ -18,7 +19,10 @@ public class WorkerSplashActivity extends SplashActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mImageLoader.cancel(true);
+
+        if (mImageLoader.getStatus() != AsyncTask.Status.FINISHED) {
+            mImageLoader.cancel(true);
+        }
     }
 
 }

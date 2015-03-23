@@ -209,44 +209,37 @@ public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
 
 For demonstration purposes we've written our own `AsyncTask` for grabbing the image. [Excellent libraries](http://square.github.io/picasso/) already exist that perform this operation and more. Note that making a network call requires the `INTERNET` permission to be added to the manifest file.
 
-How the `AsyncTask` interacts with our splash screen is up to us. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [previous section](#the-basics), and cancel the background task if it takes too long. It is not a good idea to have the duration of our splash screen dependent on the background work being completed. Many types of tasks, such as those involving network calls, can take an undetermined amount of time to complete and having a timeout mechanism is important. We can simply augment our `Runnable` object to cancel the `AsyncTask` if it hasn't been completed after the specified delay in order to achieve this.
+How the `AsyncTask` interacts with our splash screen is up to us. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [previous section](#the-basics), and cancel the background task if it takes too long. It is not a good idea to have the duration of our splash screen dependent on the background work being completed. Many types of tasks, such as those involving network calls, can take an undetermined amount of time to complete and having a timeout mechanism is important.
+
+The basis for the implementation of the splash screen will be indentical to the splash screen we developed in the [previous section](#the-basics). For brevity, we can simply extend `SplashActivity` and augment `onCreate(Bundle)` to include the execution of our `AsyncTask`.
 
 **WorkerSplashActivity.java**
 ``` java
-private ImageLoader mImageLoader;
-...
-@Override
-protected void onCreate(Bundle savedInstanceState) {
+public class WorkerSplashActivity extends SplashActivity {
+    private static final String IMAGE_URL = ...
+    private ImageLoader mImageLoader;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mImageLoader = new ImageLoader();
+        mImageLoader.execute(IMAGE_URL);
+    }
     ...
-    mImageLoader = new ImageLoader();
-    mRunnable = new Runnable() {
-        @Override
-        public void run() {
-            // cancel AsyncTask if it hasn't finished
-            if (mImageLoader.getStatus() != AsyncTask.Status.FINISHED) {
-                mImageLoader.cancel(true);
-            }
-
-            startActivity(new Intent(SplashActivity.this, MainActivity.class));
-            finish();
-        }
-    };
-
-    mImageLoader.execute(IMAGE_URL);
 }
 ```
 
-Executing `ImageLoader` inside of `onCreate(Bundle)` allows the background work to start as soon as the activity is created. Consequently, we can cancel the task in `onDestroy()` to allow the operation to continue in the background even if the activity is no longer visible.
+Executing `ImageLoader` inside of `onCreate(Bundle)` allows the background work to start as soon as the activity is created. Consequently, we can cancel the task in `onDestroy()` if it's still running in order to allow the operation to continue in the background even if the activity is no longer visible.
 
 **WorkerSplashActivity.java**
 ``` java
 @Override
 protected void onDestroy() {
     super.onDestroy();
-    mImageLoader.cancel(true);
+    if (mImageLoader.getStatus() != AsyncTask.Status.FINISHED) {
+        mImageLoader.cancel(true);
+    }
 }
 ```
-
-The rest of `WorkerSplashActivity` is identical to `SplashActivity` from the [previous section](#the-basics).
 
 ### Conclusion

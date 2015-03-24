@@ -4,15 +4,15 @@
 
 1. [Introduction](#introduction)
 2. [The Basics](#the-basics)
-3. [Gotchas](#gotchas)
-4. [Performing Background Work](#performing-background-work)
+3. [Performing Background Work](#performing-background-work)
+4. [Gotchas](#gotchas)
 5. [Conclusion](#conclusion)
 
 ### Introduction
 
-You may find yourself needing to implement a splash screen for your Android app. Reasons for doing so might include having to match an existing iOS design of your app, to perform any necessary background work at start up, or simply for the visual appeal that it provides. It should be noted that splash screens are certainly not required in your app. In fact, [some feel that they should be avoided entirely](http://cyrilmottier.com/2012/05/03/splash-screens-are-evil-dont-use-them/). Still, it is not uncommon to come across Android apps that utilize a splash screen.
+At some point you may find yourself needing to implement a splash screen for your Android app. Reasons for doing so include matching an existing design for iOS, performing necessary background work at start up, or simply for the visual appeal alone. It should be noted that splash screens are certainly not required in your app. In fact, [some feel that they should be avoided entirely](http://cyrilmottier.com/2012/05/03/splash-screens-are-evil-dont-use-them/). Still, it is not uncommon to come across Android apps that utilize a splash screen.
 
-This blog post provides a detailed outline for implementing a splash screen on Android. While the implementation is relatively straight forward, there are a few caveats that developers often overlook. We've also provided a working sample project that can be run on your device or emulator.
+This blog post provides a detailed outline for implementing a splash screen on Android. While the implementation is relatively straight forward, there are a few details that often get overlooked. We've also provided a working sample project that can be run on your device or emulator.
 
 ### The Basics
 
@@ -41,7 +41,7 @@ It's important that we extend from `Activity` and not `ActionBarActivity`. This 
 
 Our splash screen will now be the initial screen shown when the app launches.
 
-The layout for a splash screen is typically very simple. For our purposes, we will simply show an `ImageView` in the center of the screen.
+The layout for a splash screen is typically very simple. For our purposes, we will show an `ImageView` in the center of the screen.
 
 **activity_splash.xml**
 ``` xml
@@ -87,7 +87,7 @@ protected void onCreate(Bundle savedInstanceState) {
 
 `Handler` is part of the `android.os` package and it easily allows developers to utilize a message queue for a thread without having to deal with synchronization and the lower-level threading APIs in Java. In our case, we will use the `Handler` to invoke our `Runnable` object at a later point in time on the main UI thread without blocking other operations from occurring in the meantime.
 
-The implementation of `run()` is straightforward: the app's main activity (simply called `MainActivity` in the example) is started via an `Intent`. The call to `finish()` marks `SplashActivity` as done and effectively removes it from the app's back stack. This prevents the user from seeing the splash screen again if they back out of the app via the system's back button.
+The implementation of `run()` is straightforward: the app's main activity (called `MainActivity` in the example) is started via an `Intent`. The call to `finish()` marks `SplashActivity` as done and subsequently removes itself from the app's back stack. This prevents the user from seeing the splash screen again if they back out of the app via the system's back button.
 
 From `onResume()`, the method `postDelayed(Runnable, long)` is invoked on `mHandler` and is passed both our `Runnable` instance and a timed delay which is measured in milliseconds. This will enqueue `mRunnable` onto the thread's message queue and then dequeue it for execution after our specified delay.
 
@@ -113,61 +113,11 @@ protected void onPause() {
 }
 ```
 
-And that encompasses all of the necessary components for properly implementing a basic splash screen. The next section describes some of the pitfalls that developers sometimes encounter when implemetning a splash screen. For more advanced uses of a splash screen, skip to the section [Performing Background Work](#performing-background-work).
-
-### Gotchas
-
-There are often a few oversights made when developing a splash screen. For example, we made sure to remove our `Runnable` from the `Handler` in `onPause()` and then effectively restart the splash screen duration each time `onResume()` was called.
-
-**SplashActiviy.java**
-``` java
-@Override
-protected void onResume() {
-    super.onResume();
-    mHandler.postDelayed(mRunnable, SPLASH_DURATION);
-}
-
-@Override
-protected void onPause() {
-    super.onPause();
-    mHandler.removeCallbacks(mRunnable);
-}
-```
-
-If instead we moved the invocation of `postDelayed(Runnable, long)` to `onCreate()` and then didn't bother removing the `Runnable` callback in `onPause()`, the `Runnable` would end up being executed even if the app was in the background. As a result, `MainActivity` would suddenly appear on the user's screen even though the app was no longer in an active state.
-
-``` java
-// DON'T DO THIS!
-@Override
-protected void onCreate(Bundle savedInstanceState) {
-    ...
-    new Handler().postDelayed(new Runnable() {
-        @Override
-        public void run() {
-            startActivity(new Intent(SplashActivity.this, MainActivity.class));
-            finish();
-        }
-    }, SPLASH_DURATION);
-}
-```
-
-Likewise, we could have forgot to cancel our `AsyncTask` in `onDestroy()` or in our `Runnable` implementation. Forgetting to do so could easily cause a **null pointer exception** at runtime. Imagine if we had the following line of code in `onPostExecute(Bitmap)`:
-
-**ImageLoader.java**
-``` java
-@Override
-protected void onPostExecute(Bitmap result) {
-    Log.i(SplashActivity.class.getName(), "Image successfully downloaded.");
-
-    if (result != null) {
-        // do something with the bitmap
-    }
-}
-```
+And that encompasses all of the necessary components for properly implementing a basic splash screen. The next section describes how to additionally perform background work when the splash screen is present.
 
 ### Performing Background Work
 
-A common pattern is to perform some background work at start up when the splash screen is present. This can be helpful if there is data shown on the home screen that needs to be retrieved from a network or external memory device. A valid alternative is to display a progress bar or dialog to indicate to the user that a long standing operation is being performed. With a splash screen, while inhibiting the user's progress through the app, we get the benefit of hiding expensive operations from the user.
+A common approach is to perform some background work at start up when the splash screen is present. This can be helpful if there is data shown on the home screen that needs to be retrieved from a network or external memory device. A valid alternative is to display a progress bar or dialog to indicate to the user that a long standing operation is being performed. While a splash screen inhibits the user's progress through the app, we get the benefit of hiding expensive operations from the user.
 
 As a trivial example, let's assume we wanted to download an image from the network (e.g. a user's profile image that is shown on the home screen). We can create an `AsyncTask` that will do exactly this:
 
@@ -207,11 +157,9 @@ public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
 
 `doInBackground(String...)` runs on its own thread and performs the actual network call for fetching the image. Both `onPostExecute(Bitmap)` and `onCancelled()` will run on the thread that the `ImageLoader` was invoked from, which is the main UI thread in our case.
 
-For demonstration purposes we've written our own `AsyncTask` for grabbing the image. [Excellent libraries](http://square.github.io/picasso/) already exist that perform this operation and more. Note that making a network call requires the `INTERNET` permission to be added to the manifest file.
+For demonstration purposes we've written our own `AsyncTask` for retrieving the image. [Excellent libraries](http://square.github.io/picasso/) already exist that perform this operation and more. Note that making a network call requires the `INTERNET` permission to be added to the manifest file.
 
-How the `AsyncTask` interacts with our splash screen is up to us. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [previous section](#the-basics), and cancel the background task if it takes too long. It is not a good idea to have the duration of our splash screen dependent on the background work being completed. Many types of tasks, such as those involving network calls, can take an undetermined amount of time to complete and having a timeout mechanism is important.
-
-The basis for the implementation of the splash screen will be indentical to the splash screen we developed in the [previous section](#the-basics). For brevity, we can simply extend `SplashActivity` and augment `onCreate(Bundle)` to include the execution of our `AsyncTask`.
+The basis for the implementation of the splash screen will be identical to the splash screen we developed in the [previous section](#the-basics). For brevity, we can simply extend `SplashActivity` and augment `onCreate(Bundle)` to include the execution of our `AsyncTask`.
 
 **WorkerSplashActivity.java**
 ``` java
@@ -241,5 +189,59 @@ protected void onDestroy() {
     }
 }
 ```
+
+That is the extent of performing background work while the splash screen is present. The next section explores some of the pitfalls that developers can encounter with a splash screen.
+
+### Gotchas
+
+There are a handful of oversights that developers often make when implementing a splash screen. For example, we made sure to remove our `Runnable` from the `Handler` in `onPause()` and then effectively restart the splash screen duration each time `onResume()` was called.
+
+**SplashActiviy.java**
+``` java
+@Override
+protected void onResume() {
+    super.onResume();
+    mHandler.postDelayed(mRunnable, SPLASH_DURATION);
+}
+
+@Override
+protected void onPause() {
+    super.onPause();
+    mHandler.removeCallbacks(mRunnable);
+}
+```
+
+If instead we moved the invocation of `postDelayed(Runnable, long)` to `onCreate()` and then didn't bother removing the `Runnable` callback in `onPause()`, the `Runnable` would end up being executed even if the app was in the background. As a result, `MainActivity` would suddenly appear on the user's screen even though the app was no longer in an active state.
+
+``` java
+// DON'T DO THIS!
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    ...
+    new Handler().postDelayed(new Runnable() {
+        @Override
+        public void run() {
+            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            finish();
+        }
+    }, SPLASH_DURATION);
+}
+```
+
+Likewise, we could have forgotten to cancel our `AsyncTask` in `onDestroy()`. Doing so could easily cause a **null pointer exception** at runtime. Imagine if we had the following line of code in `onPostExecute(Bitmap)`:
+
+**ImageLoader.java**
+``` java
+@Override
+protected void onPostExecute(Bitmap result) {
+    Log.i(SplashActivity.class.getName(), "Image successfully downloaded.");
+
+    if (result != null) {
+        // do something with the bitmap
+    }
+}
+```
+
+How the `AsyncTask` interacts with our splash screen is up to us. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [previous section](#the-basics), and cancel the background task if it takes too long. It is not a good idea to have the duration of our splash screen dependent on the background work being completed. Many types of tasks, such as those involving network calls, can take an undetermined amount of time to complete and having a timeout mechanism is important.
 
 ### Conclusion

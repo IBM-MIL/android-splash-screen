@@ -3,7 +3,6 @@ package com.ibm.mil.splashscreendemo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.os.SystemClock;
 import android.util.Log;
 
 import java.net.URL;

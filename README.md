@@ -254,13 +254,7 @@ protected void onCreate(Bundle savedInstanceState) {
 It's also important that we employ a `Handler` to delay the execution of our code contained in the `Runnable`.
 
 ``` java
-new Handler().postDelayed(new Runnable() {
-    @Override
-    public void run() {
-        startActivity(new Intent(SplashActivity.this, MainActivity.class));
-        finish();
-    }
-}, SPLASH_DURATION);
+mHandler.postDelayed(mRunnable, SPLASH_DURATION);
 ```
 
 If the main thread is put to sleep in order to simulate the delay, then the user would be blocked from performing any UI actions while the splash screen is visible. This includes the system back button to exit our app.
@@ -295,3 +289,7 @@ protected void onDestroy() {
 It is not a good idea to have the duration of our splash screen dependent on the background work being completed. Many types of tasks, such as those involving network calls, can take an undetermined amount of time to complete and having a timeout mechanism is important.
 
 ### Conclusion
+
+Splash screens, while simple on the surface, take special consideration in order to implement properly. Missing even the smallest detail can lead to a poor user experience. Hopefully this article has shown you the areas that you need to pay careful attention to. And while this article does cover the subject at length, it certainly isn't comprehensive. Several more enhancements could be imagined for our splash screen.
+
+** Put content regarding our lab, blogs, and open source work here ** 

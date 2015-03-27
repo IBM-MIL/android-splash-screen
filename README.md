@@ -18,7 +18,7 @@ This blog post provides a detailed outline for implementing a splash screen on A
 
 First, create an `Activity` named `SplashActivity`.
 
-**SplashActivity.java**
+*SplashActivity.java*
 ``` java
 public class SplashActivity extends Activity {
     ...
@@ -27,7 +27,7 @@ public class SplashActivity extends Activity {
 
 It's important that we extend from `Activity` and not `ActionBarActivity`. This will exclude the `ActionBar` from being visible on our splash screen. Next, declare `SplashActivity` as the **launcher activity** in the app's manifest file.
 
-**AndroidManifest.xml**
+*AndroidManifest.xml*
 ``` xml
 <activity
   android:name=".SplashActivity"
@@ -43,7 +43,7 @@ Our splash screen will now be the initial screen shown when the app launches.
 
 The layout for a splash screen is typically very simple. For our purposes, we will show an `ImageView` in the center of the screen.
 
-**activity_splash.xml**
+*activity_splash.xml*
 ``` xml
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -64,7 +64,7 @@ The layout for a splash screen is typically very simple. For our purposes, we wi
 
 Inside `onCreate(Bundle)` we will initialize a `Handler` and its corresponding `Runnable` that will be responsible for starting the app's main activity after a specified duration.
 
-**SplashActivity.java**
+*SplashActivity.java*
 ``` java
 private Handler mHandler;
 private Runnable mRunnable;
@@ -91,7 +91,7 @@ The implementation of `run()` is straightforward: the app's main activity (calle
 
 From `onResume()`, the method `postDelayed(Runnable, long)` is invoked on `mHandler` and is passed both our `Runnable` instance and a timed delay which is measured in milliseconds. This will enqueue `mRunnable` onto the thread's message queue and then dequeue it for execution after our specified delay.
 
-**SplashActivity.java**
+*SplashActivity.java*
 ``` java
 private static final long SPLASH_DURATION = 2500L;
 ...
@@ -104,7 +104,7 @@ protected void onResume() {
 
 We will also remove `mRunnable` from the `Handler` in `onPause()` to ensure it doesn't execute when `SplashActivity` is no longer in a resumed state.
 
-**SplashActivity.java**
+*SplashActivity.java*
 ``` java
 @Override
 protected void onPause() {
@@ -115,7 +115,7 @@ protected void onPause() {
 
 Optionally, we can allow the user to dismiss the splash screen prematurely. In `onCreate(Bundle)` we can add an `OnClickListener` to the root view of our layout.
 
-**SplashActivity.java**
+*SplashActivity.java*
 ``` java
 @Override
 protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +144,7 @@ A common approach is to perform some background work at start up when the splash
 
 As a trivial example, let's assume we wanted to download an image from the network (e.g. a user's profile image that is shown on the home screen). We can create an `AsyncTask` that will do exactly this:
 
-**ImageLoader.java**
+*ImageLoader.java*
 ``` java
 public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
     private static final String TAG = ImageLoader.class.getName();
@@ -184,7 +184,7 @@ For demonstration purposes we've written our own `AsyncTask` for retrieving the 
 
 The basis for the implementation of the splash screen will be identical to the splash screen we developed in the [previous section](#the-basics). For brevity, we can simply extend `SplashActivity` and augment `onCreate(Bundle)` to include the execution of our `AsyncTask`.
 
-**WorkerSplashActivity.java**
+*WorkerSplashActivity.java*
 ``` java
 public class WorkerSplashActivity extends SplashActivity {
     private static final String IMAGE_URL = ...
@@ -202,7 +202,7 @@ public class WorkerSplashActivity extends SplashActivity {
 
 Executing `ImageLoader` inside of `onCreate(Bundle)` allows the background work to start as soon as the activity is created. Consequently, we can cancel the task in `onDestroy()` if it's still running in order to allow the operation to continue in the background even if the activity is no longer visible.
 
-**WorkerSplashActivity.java**
+*WorkerSplashActivity.java*
 ``` java
 @Override
 protected void onDestroy() {
@@ -217,9 +217,9 @@ That is the extent of performing background work while the splash screen is pres
 
 ### Gotchas
 
-There are a handful of oversights that developers often make when implementing a splash screen. For example, we made sure to remove our `Runnable` from the `Handler` in `onPause()` and then effectively restart the splash screen duration each time `onResume()` was called.
+There are a handful of oversights that developers often make when implementing a splash screen. For example, we make sure to remove our `Runnable` from the `Handler` in `onPause()` and then effectively restart the splash screen duration each time `onResume()` is called.
 
-**SplashActiviy.java**
+*SplashActiviy.java*
 ``` java
 @Override
 protected void onResume() {
@@ -234,7 +234,7 @@ protected void onPause() {
 }
 ```
 
-If instead we moved the invocation of `postDelayed(Runnable, long)` to `onCreate()` and then didn't bother removing the `Runnable` callback in `onPause()`, the `Runnable` would end up being executed even if the app was in the background. As a result, `MainActivity` would suddenly appear on the user's screen even though the app was no longer in an active state.
+If instead we moved the invocation of `postDelayed(Runnable, long)` to `onCreate()` and didn't bother removing the `Runnable` callback in `onPause()`, the `Runnable` would end up being executed even if the app was in the background. As a result, `MainActivity` would suddenly appear on the user's screen even though the app was no longer in an active state.
 
 ``` java
 // DON'T DO THIS!
@@ -263,7 +263,7 @@ new Handler().postDelayed(new Runnable() {
 }, SPLASH_DURATION);
 ```
 
-If instead we put the main thread to sleep in order to simulate the delay, then the user would be blocked from performing any UI actions while the splash screen is visible. This includes the system back button to exit our app.
+If the main thread is put to sleep in order to simulate the delay, then the user would be blocked from performing any UI actions while the splash screen is visible. This includes the system back button to exit our app.
 
 ``` java
 // DON'T DO THIS
@@ -274,8 +274,24 @@ try {
 }
 ```
 
-Likewise, it's important that we use an `AsyncTask` to perform background operations. Without it, not only do we block the main thread, we also increase the likelihood of an **ANR** (Application Not Responding) message being sent to the user. This happens when the system can't respond to an input even for a minimum of 5 seconds.
+Likewise, it's essential that we use an `AsyncTask` to perform background operations. Without it, not only do we block the main thread, we also increase the likelihood of an **ANR** (Application Not Responding) message being shown to the user. This happens when the system can't respond to an input event for a minimum of 5 seconds.
 
-How the `AsyncTask` interacts with our splash screen is up to us. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [previous section](#the-basics), and cancel the background task if it takes too long. It is not a good idea to have the duration of our splash screen dependent on the background work being completed. Many types of tasks, such as those involving network calls, can take an undetermined amount of time to complete and having a timeout mechanism is important.
+<img src="https://github.com/jpetitto/android-splash-screen/blob/draft/ANR.png" width="215" height="108" />
+<br />*The Dreaded ANR Dialog*
+
+Another consideration is how the `AsyncTask` interacts with our splash screen. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [first section](#the-basics), and then cancel the background task if it takes too long.
+
+``` java
+@Override
+protected void onDestroy() {
+    super.onDestroy();
+
+    if (mImageLoader.getStatus() != AsyncTask.Status.FINISHED) {
+        mImageLoader.cancel(true);
+    }
+}
+```
+
+It is not a good idea to have the duration of our splash screen dependent on the background work being completed. Many types of tasks, such as those involving network calls, can take an undetermined amount of time to complete and having a timeout mechanism is important.
 
 ### Conclusion

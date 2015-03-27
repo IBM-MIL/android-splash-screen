@@ -251,20 +251,6 @@ protected void onCreate(Bundle savedInstanceState) {
 }
 ```
 
-Likewise, we could have forgotten to cancel our `AsyncTask` in `onDestroy()`. If our task depended on a reference that was tied to the lifetime of `SplashActivity`, a **null pointer exception** would occur if the task was still running after the activity had been destroyed.
-
-**ImageLoader.java**
-``` java
-@Override
-protected void onPostExecute(Bitmap result) {
-    Log.i(SplashActivity.class.getName(), "Image successfully downloaded.");
-
-    if (result != null) {
-        // do something with the bitmap
-    }
-}
-```
-
 It's also important that we employ a `Handler` to delay the execution of our code contained in the `Runnable`.
 
 ``` java
@@ -277,15 +263,18 @@ new Handler().postDelayed(new Runnable() {
 }, SPLASH_DURATION);
 ```
 
-If instead we put the main UI thread to sleep in order to simulate the delay, then the user would be blocked from performing any UI actions while the splash screen is visible.
+If instead we put the main thread to sleep in order to simulate the delay, then the user would be blocked from performing any UI actions while the splash screen is visible. This includes the system back button to exit our app.
 
 ``` java
+// DON'T DO THIS
 try {
     Thread.sleep(SPLASH_DURATION);
 } catch (InterruptedException e) {
     e.printStackTrace();
 }
 ```
+
+Likewise, it's important that we use an `AsyncTask` to perform background operations. Without it, not only do we block the main thread, we also increase the likelihood of an **ANR** (Application Not Responding) message being sent to the user. This happens when the system can't respond to an input even for a minimum of 5 seconds.
 
 How the `AsyncTask` interacts with our splash screen is up to us. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [previous section](#the-basics), and cancel the background task if it takes too long. It is not a good idea to have the duration of our splash screen dependent on the background work being completed. Many types of tasks, such as those involving network calls, can take an undetermined amount of time to complete and having a timeout mechanism is important.
 

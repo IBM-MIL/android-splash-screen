@@ -113,6 +113,29 @@ protected void onPause() {
 }
 ```
 
+Optionally, we can allow the user to dismiss the splash screen prematurely. In `onCreate(Bundle)` we can add an `OnClickListener` to the root view of our layout.
+
+**SplashActivity.java**
+``` java
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_splash);
+    ...
+    // allow user to click and dismiss the splash screen prematurely
+    View rootView = findViewById(android.R.id.content);
+    rootView.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            finish();
+        }
+    });
+}
+```
+
+Now when the user taps anywhere on the screen, the splash screen will be dismissed. If you wish to include this functionality, you should move the body of the `onClick(View)` method to a private helper method since it is indentical to the code used in `run()` of our `Runnable`.
+
 And that encompasses all of the necessary components for properly implementing a basic splash screen. The next section describes how to additionally perform background work when the splash screen is present.
 
 ### Performing Background Work
@@ -228,7 +251,7 @@ protected void onCreate(Bundle savedInstanceState) {
 }
 ```
 
-Likewise, we could have forgotten to cancel our `AsyncTask` in `onDestroy()`. Doing so could easily cause a **null pointer exception** at runtime. Imagine if we had the following line of code in `onPostExecute(Bitmap)`:
+Likewise, we could have forgotten to cancel our `AsyncTask` in `onDestroy()`. If our task depended on a reference that was tied to the lifetime of `SplashActivity`, a **null pointer exception** would occur if the task was still running after the activity had been destroyed.
 
 **ImageLoader.java**
 ``` java
@@ -239,6 +262,28 @@ protected void onPostExecute(Bitmap result) {
     if (result != null) {
         // do something with the bitmap
     }
+}
+```
+
+It's also important that we employ a `Handler` to delay the execution of our code contained in the `Runnable`.
+
+``` java
+new Handler().postDelayed(new Runnable() {
+    @Override
+    public void run() {
+        startActivity(new Intent(SplashActivity.this, MainActivity.class));
+        finish();
+    }
+}, SPLASH_DURATION);
+```
+
+If instead we put the main UI thread to sleep in order to simulate the delay, then the user would be blocked from performing any UI actions while the splash screen is visible.
+
+``` java
+try {
+    Thread.sleep(SPLASH_DURATION);
+} catch (InterruptedException e) {
+    e.printStackTrace();
 }
 ```
 

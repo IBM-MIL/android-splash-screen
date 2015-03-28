@@ -164,7 +164,7 @@ public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
 
     @Override
     protected void onPostExecute(Bitmap result) {
-        Log.i(TAG, "Image successfully downloaded!");
+        Log.i(TAG, "Image successfully downloaded.");
         if (result != null) {
             // do something with the bitmap
             ...
@@ -272,7 +272,7 @@ try {
 }
 ```
 
-Likewise, it's essential that we use an `AsyncTask` to perform background operations. Without it, not only do we block the main thread, we also increase the likelihood of an **ANR** (Application Not Responding) message being shown to the user. This happens when the system can't respond to an input event for a minimum of 5 seconds.
+Likewise, it's essential that we use an `AsyncTask` to perform any background operations. Without it, not only do we block the main thread, but we also increase the likelihood of an **ANR** (Application Not Responding) message being shown to the user. This happens when the system can't respond to an input event for a minimum of 5 seconds.
 
 <img src="https://github.com/jpetitto/android-splash-screen/blob/draft/ANR.png" width="215" height="108" />
 <br />*The Dreaded ANR Dialog*

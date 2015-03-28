@@ -12,7 +12,7 @@
 
 At some point you may find yourself needing to implement a splash screen for your Android app. Reasons for doing so include matching an existing design for iOS, performing necessary background work at start up, or simply for the visual appeal alone. It should be noted that splash screens are certainly not required in your app. In fact, [some feel that they should be avoided entirely](http://cyrilmottier.com/2012/05/03/splash-screens-are-evil-dont-use-them/). Still, it is not uncommon to come across Android apps that utilize a splash screen.
 
-This blog post provides a detailed outline for implementing a splash screen on Android. While the implementation is relatively straight forward, there are a few details that often get overlooked. We've also provided a working sample project that can be run on your device or emulator.
+This article provides a detailed outline for implementing a splash screen on Android. While the implementation is relatively straight forward, there are a few details that often get overlooked. We've also provided a working sample project that can be run on your device or emulator.
 
 ### The Basics
 
@@ -178,7 +178,7 @@ public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
 }
 ```
 
-`doInBackground(String...)` runs on its own thread and performs the actual network call for fetching the image. Both `onPostExecute(Bitmap)` and `onCancelled()` will run on the thread that the `ImageLoader` was invoked from, which is the main UI thread in our case.
+`doInBackground(String...)` runs on its own thread and performs the actual network call for fetching the image. Both `onPostExecute(Bitmap)` and `onCancelled()` will run on the thread that the `ImageLoader` was invoked from, which is the main thread in our case.
 
 For demonstration purposes we've written our own `AsyncTask` for retrieving the image. [Excellent libraries](http://square.github.io/picasso/) already exist that perform this operation and more. Note that making a network call requires the `INTERNET` permission to be added to the manifest file.
 
@@ -234,7 +234,7 @@ protected void onPause() {
 }
 ```
 
-If instead we moved the invocation of `postDelayed(Runnable, long)` to `onCreate()` and didn't bother removing the `Runnable` callback in `onPause()`, the `Runnable` would end up being executed even if the app was in the background. As a result, `MainActivity` would suddenly appear on the user's screen even though the app was no longer in an active state.
+If instead we moved the invocation of `postDelayed(Runnable, long)` to `onCreate(Bundle)` and didn't bother removing the `Runnable` callback in `onPause()`, the `Runnable` would end up being executed even if the app was in the background. As a result, `MainActivity` would suddenly appear on the user's screen even though the app was no longer in an active state.
 
 ``` java
 // DON'T DO THIS!
@@ -253,6 +253,7 @@ protected void onCreate(Bundle savedInstanceState) {
 
 It's also important that we employ a `Handler` to delay the execution of our code contained in the `Runnable`.
 
+*SplashActivity.java*
 ``` java
 mHandler.postDelayed(mRunnable, SPLASH_DURATION);
 ```
@@ -265,6 +266,9 @@ try {
     Thread.sleep(SPLASH_DURATION);
 } catch (InterruptedException e) {
     e.printStackTrace();
+} finally {
+    startActivity(this, MainActivity.class);
+    finish();
 }
 ```
 
@@ -275,6 +279,7 @@ Likewise, it's essential that we use an `AsyncTask` to perform background operat
 
 Another consideration is how the `AsyncTask` interacts with our splash screen. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [first section](#the-basics), and then cancel the background task if it takes too long.
 
+*WorkerSplashActivity.java*
 ``` java
 @Override
 protected void onDestroy() {
@@ -290,6 +295,6 @@ It is not a good idea to have the duration of our splash screen dependent on the
 
 ### Conclusion
 
-Splash screens, while simple on the surface, take special consideration in order to implement properly. Missing even the smallest detail can lead to a poor user experience. Hopefully this article has shown you the areas that you need to pay careful attention to. And while this article does cover the subject at length, it certainly isn't comprehensive. Several more enhancements could be imagined for our splash screen.
+Splash screens, while simple on the surface, take special consideration in order to implement properly. Missing even the smallest detail can lead to a poor user experience. Hopefully this article has revealed the areas that you need to pay careful attention to. And while this article does cover the subject at length, it certainly isn't comprehensive. Several more enhancements could be imagined for a splash screen.
 
 ** Put content regarding our lab, blogs, and open source work here ** 

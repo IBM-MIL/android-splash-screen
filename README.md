@@ -142,7 +142,7 @@ And that encompasses all of the necessary components for properly implementing a
 
 A common approach is to perform some background work at start up while the splash screen is active. This can be helpful if there is data shown on the home screen that needs to be retrieved from a network or external memory device. A valid alternative is to display a progress bar or dialog to indicate to the user that a long standing operation is being performed. While a splash screen inhibits the user's progress through the app, we get the benefit of hiding expensive operations from the user.
 
-As a trivial example, let's assume we wanted to download an image from the network (e.g. a user's profile image that is shown on the home screen). We can create an `AsyncTask` that will do exactly this:
+For example, let's assume we wanted to download an image from the network (e.g. a user's profile image that is shown on the home screen). We can create an `AsyncTask` that will do exactly this:
 
 *ImageLoader.java*
 ``` java

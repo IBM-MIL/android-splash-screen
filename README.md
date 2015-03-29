@@ -272,7 +272,7 @@ try {
 }
 ```
 
-Likewise, it's essential that we use an `AsyncTask` to perform any background operations. Without it, not only do we block the main thread, but we also increase the likelihood of an **ANR** (Application Not Responding) message being shown to the user. This happens when the system can't respond to an input event for a minimum of 5 seconds.
+Likewise, it's essential that we use an `AsyncTask` to perform any background work. Without it, not only do we block the main thread, but we also increase the likelihood of an **ANR** (Application Not Responding) message being shown to the user. This happens when the system can't respond to an input event for a minimum of 5 seconds.
 
 <img src="https://github.com/jpetitto/android-splash-screen/blob/draft/ANR.png" width="215" height="108" />
 <br />*The Dreaded ANR Dialog*
@@ -295,6 +295,10 @@ It is not a good idea to have the duration of our splash screen dependent on the
 
 ### Conclusion
 
-Splash screens, while simple on the surface, take special consideration in order to implement properly. Missing even the smallest detail can lead to a poor user experience. Hopefully this article has revealed the areas that you need to pay careful attention to. And while this article does cover the subject at length, it certainly isn't comprehensive. Several more enhancements could be imagined for a splash screen.
+Splash screens, while simple on the surface, take special consideration in order to implement properly. Missing even the smallest detail can lead to a poor user experience. Hopefully this article has revealed which areas you need to examine carefully. And while this article does cover the subject at length, it certainly isn't comprehensive. Several more enhancements could be imagined for a splash screen.
 
-** Put content regarding our lab, blogs, and open source work here ** 
+*John Petitto is a software engineer focused on Android development at IBM's Mobile Innovation Lab in Austin, TX. Check out more [blog articles](http://www-969.ibm.com/innovation/milab/news) from the MIL team and visit our [GitHub page](https://github.com/IBM-MIL) to see our growing list of open source projects.*
+
+- [Learn more about us on our website](http://www-969.ibm.com/innovation/milab/)
+- [Tweet and follow us on Twitter](https://twitter.com/ibm_mil)
+- [See us on Instagram](https://instagram.com/ibm_mil/)

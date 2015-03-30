@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">SplashScreenDemo</string>
+    <string name="app_name">Splash Screen Demo</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
     <string name="splash_logo_desc">Splash Screen Logo</string>
+    <string name="hello_mil">Hello from the Mobile Innovation Lab!</string>
 
 </resources>

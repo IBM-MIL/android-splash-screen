@@ -274,7 +274,7 @@ try {
 
 Likewise, it's essential that we use an `AsyncTask` to perform any background work. Without it, not only do we block the main thread, but we also increase the likelihood of an **ANR** (Application Not Responding) message being shown to the user. This happens when the system can't respond to an input event for a minimum of 5 seconds.
 
-<img src="https://github.com/jpetitto/android-splash-screen/blob/draft/ANR.png" width="215" height="108" />
+<img src="ANR.png" width="215" height="108" />
 <br />*The Dreaded ANR Dialog*
 
 Another consideration is how the `AsyncTask` interacts with our splash screen. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [first section](#the-basics), and then cancel the background task if it takes too long.

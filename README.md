@@ -219,7 +219,7 @@ That is the extent of performing background work while the splash screen is pres
 
 There are a handful of oversights that developers often make when implementing a splash screen. For example, we make sure to remove our `Runnable` from the `Handler` in `onPause()` and then effectively restart the splash screen duration each time `onResume()` is called.
 
-*SplashActiviy.java*
+*SplashActivity.java*
 ``` java
 @Override
 protected void onResume() {

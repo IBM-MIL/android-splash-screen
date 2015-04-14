@@ -18,7 +18,7 @@ This article provides a detailed outline for implementing a splash screen on And
 
 First, create an `Activity` named `SplashActivity`.
 
-*SplashActivity.java*
+*[SplashActivity.java](/app/src/main/java/com/ibm/mil/splashscreendemo/SplashActivity.java)*
 ``` java
 public class SplashActivity extends Activity {
     ...
@@ -27,7 +27,7 @@ public class SplashActivity extends Activity {
 
 It's important that we extend from `Activity` and not `ActionBarActivity`. This will exclude the `ActionBar` from being visible on our splash screen. Next, declare `SplashActivity` as the **launcher activity** in the app's manifest file.
 
-*AndroidManifest.xml*
+*[AndroidManifest.xml](/app/src/main/AndroidManifest.xml)*
 ``` xml
 <activity
   android:name=".SplashActivity"
@@ -43,7 +43,7 @@ Our splash screen will now be the initial screen shown when the app launches.
 
 The layout for a splash screen is typically very simple. For our purposes, we will show an `ImageView` in the center of the screen.
 
-*activity_splash.xml*
+*[activity_splash.xml](/app/src/main/res/layout/activity_splash.xml)*
 ``` xml
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -64,7 +64,7 @@ The layout for a splash screen is typically very simple. For our purposes, we wi
 
 Inside `onCreate(Bundle)` we will initialize a `Handler` and its corresponding `Runnable` that will be responsible for starting the app's main activity after a specified duration.
 
-*SplashActivity.java*
+*[SplashActivity.java](/app/src/main/java/com/ibm/mil/splashscreendemo/SplashActivity.java)*
 ``` java
 private Handler mHandler;
 private Runnable mRunnable;
@@ -91,7 +91,7 @@ The implementation of `run()` is straightforward: the app's main activity (calle
 
 From `onResume()`, the method `postDelayed(Runnable, long)` is invoked on `mHandler` and is passed both our `Runnable` instance and a timed delay which is measured in milliseconds. This will enqueue `mRunnable` onto the thread's message queue and then dequeue it for execution after our specified delay.
 
-*SplashActivity.java*
+*[SplashActivity.java](/app/src/main/java/com/ibm/mil/splashscreendemo/SplashActivity.java)*
 ``` java
 private static final long SPLASH_DURATION = 2500L;
 ...
@@ -104,7 +104,7 @@ protected void onResume() {
 
 We will also remove `mRunnable` from the `Handler` in `onPause()` to ensure it doesn't execute when `SplashActivity` is no longer in a resumed state.
 
-*SplashActivity.java*
+*[SplashActivity.java](/app/src/main/java/com/ibm/mil/splashscreendemo/SplashActivity.java)*
 ``` java
 @Override
 protected void onPause() {
@@ -115,7 +115,7 @@ protected void onPause() {
 
 Optionally, we can allow the user to dismiss the splash screen prematurely. In `onCreate(Bundle)` we can add an `OnClickListener` to the root view of our layout.
 
-*SplashActivity.java*
+*[SplashActivity.java](/app/src/main/java/com/ibm/mil/splashscreendemo/SplashActivity.java)*
 ``` java
 @Override
 protected void onCreate(Bundle savedInstanceState) {
@@ -144,7 +144,7 @@ A common approach is to perform some background work at start up while the splas
 
 For example, let's assume we wanted to download an image from the network (e.g. a user's profile image that is shown on the home screen). We can create an `AsyncTask` that will do exactly this:
 
-*ImageLoader.java*
+*[ImageLoader.java](/app/src/main/java/com/ibm/mil/splashscreendemo/ImageLoader.java)*
 ``` java
 public class ImageLoader extends AsyncTask<String, Void, Bitmap> {
     private static final String TAG = ImageLoader.class.getName();
@@ -184,7 +184,7 @@ For demonstration purposes we've written our own `AsyncTask` for retrieving the 
 
 The basis for the implementation of the splash screen will be identical to the splash screen we developed in the [previous section](#the-basics). For brevity, we can simply extend `SplashActivity` and augment `onCreate(Bundle)` to include the execution of our `AsyncTask`.
 
-*WorkerSplashActivity.java*
+*[WorkerSplashActivity.java](/app/src/main/java/com/ibm/mil/splashscreendemo/WorkerSplashActivity.java)*
 ``` java
 public class WorkerSplashActivity extends SplashActivity {
     private static final String IMAGE_URL = ...
@@ -202,7 +202,7 @@ public class WorkerSplashActivity extends SplashActivity {
 
 Executing `ImageLoader` inside of `onCreate(Bundle)` allows the background work to start as soon as the activity is created. Consequently, we can cancel the task in `onDestroy()` if it's still running in order to allow the operation to continue in the background even if the activity is no longer visible.
 
-*WorkerSplashActivity.java*
+*[WorkerSplashActivity.java](/app/src/main/java/com/ibm/mil/splashscreendemo/WorkerSplashActivity.java)*
 ``` java
 @Override
 protected void onDestroy() {
@@ -219,7 +219,7 @@ That is the extent of performing background work while the splash screen is pres
 
 There are a handful of oversights that developers often make when implementing a splash screen. For example, we make sure to remove our `Runnable` from the `Handler` in `onPause()` and then effectively restart the splash screen duration each time `onResume()` is called.
 
-*SplashActivity.java*
+*[SplashActivity.java](/app/src/main/java/com/ibm/mil/splashscreendemo/SplashActivity.java)*
 ``` java
 @Override
 protected void onResume() {
@@ -253,7 +253,7 @@ protected void onCreate(Bundle savedInstanceState) {
 
 It's also important that we employ a `Handler` to delay the execution of our code contained in the `Runnable`.
 
-*SplashActivity.java*
+*[SplashActivity.java](/app/src/main/java/com/ibm/mil/splashscreendemo/SplashActivity.java)*
 ``` java
 mHandler.postDelayed(mRunnable, SPLASH_DURATION);
 ```
@@ -279,7 +279,7 @@ Likewise, it's essential that we use an `AsyncTask` to perform any background wo
 
 Another consideration is how the `AsyncTask` interacts with our splash screen. A good approach is to have the splash screen remain visible for a specified duration, like how we did in the [first section](#the-basics), and then cancel the background task if it takes too long.
 
-*WorkerSplashActivity.java*
+*[WorkerSplashActivity.java](/app/src/main/java/com/ibm/mil/splashscreendemo/WorkerSplashActivity.java)*
 ``` java
 @Override
 protected void onDestroy() {

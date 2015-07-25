@@ -297,7 +297,7 @@ It is not a good idea to have the duration of our splash screen dependent on the
 
 Splash screens, while simple on the surface, take special consideration in order to implement properly. Missing even the smallest detail can lead to a poor user experience. Hopefully this article has revealed which areas you need to examine carefully. And while this article does cover the subject at length, it certainly isn't comprehensive. Several more enhancements could be imagined for a splash screen.
 
-*John Petitto is a software engineer focused on Android development at IBM's Mobile Innovation Lab in Austin, TX. Check out more [blog articles](http://www-969.ibm.com/innovation/milab/news) from the MIL team and visit our [GitHub page](https://github.com/IBM-MIL) to see our growing list of open source projects.*
+*John Petitto is a software engineer focused on Android development at IBM's Mobile Innovation Lab in Austin, TX. Check out more [blog articles](http://www-969.ibm.com/innovation/milab/blog) from the MIL team and visit our [GitHub page](https://github.com/IBM-MIL) to see our growing list of open source projects.*
 
 - [Learn more about us on our website](http://www-969.ibm.com/innovation/milab/)
 - [Tweet and follow us on Twitter](https://twitter.com/ibm_mil)
